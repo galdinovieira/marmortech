@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marmortech</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial,sans-serif;
+  background:#f4f6f8;
+  color:#17212b;
+}
+header{
+  background:#071d35;
+  color:white;
+  padding:22px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.logo{
+  font-size:25px;
+  font-weight:bold;
+  letter-spacing:1px;
+}
+.logo span{color:#20c4c7}
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:25px;
+}
+h1{margin-bottom:8px}
+.subtitle{color:#667085;margin-bottom:25px}
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;
+}
+.card{
+  background:white;
+  padding:22px;
+  border-radius:14px;
+  box-shadow:0 3px 12px #00000012;
+}
+.card strong{
+  display:block;
+  font-size:28px;
+  margin-top:8px;
+}
+.section{
+  background:white;
+  margin-top:25px;
+  padding:22px;
+  border-radius:14px;
+  box-shadow:0 3px 12px #00000012;
+}
+input{
+  width:100%;
+  padding:13px;
+  margin:7px 0 14px;
+  border:1px solid #ccd3dc;
+  border-radius:8px;
+  font-size:16px;
+}
+button{
+  background:#0b7d83;
+  color:white;
+  border:0;
+  padding:13px 20px;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{background:#075e63}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+}
+th,td{
+  padding:12px;
+  border-bottom:1px solid #e5e7eb;
+  text-align:left;
+}
+.plan{
+  margin-top:20px;
+  padding:18px;
+  background:#eef9f9;
+  border-radius:10px;
+  display:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">MARMOR<span>TECH</span></div>
+  <div>Sistema de Gestão</div>
+</header>
+
+<div class="container">
+
+<h1>Painel Marmortech</h1>
+<p class="subtitle">Gestão inteligente para sua marmoraria</p>
+
+<div class="cards">
+  <div class="card">
+    Peças cadastradas
+    <strong id="totalPecas">0</strong>
+  </div>
+
+  <div class="card">
+    Área total
+    <strong id="areaTotal">0 m²</strong>
+  </div>
+
+  <div class="card">
+    Projetos
+    <strong>0</strong>
+  </div>
+
+  <div class="card">
+    Status
+    <strong>Online</strong>
+  </div>
+</div>
+
+<div class="section">
+
+<h2>Adicionar peça</h2>
+
+<label>Nome da peça</label>
+<input id="nome" placeholder="Ex.: Bancada cozinha">
+
+<label>Comprimento (cm)</label>
+<input id="comprimento" type="number" placeholder="Ex.: 180">
+
+<label>Largura (cm)</label>
+<input id="largura" type="number" placeholder="Ex.: 60">
+
+<button onclick="adicionarPeca()">+ Adicionar peça</button>
+
+<table>
+<thead>
+<tr>
+<th>Peça</th>
+<th>Medida</th>
+<th>Área</th>
+</tr>
+</thead>
+
+<tbody id="lista"></tbody>
+</table>
+
+<button onclick="gerarPlano()" style="margin-top:20px">
+Gerar plano de corte
+</button>
+
+<div class="plan" id="plano">
+<h3>Plano de corte</h3>
+<p id="resultado"></p>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let pecas=[];
+let area=0;
+
+function adicionarPeca(){
+
+const nome=document.getElementById("nome").value;
+const comprimento=parseFloat(document.getElementById("comprimento").value);
+const largura=parseFloat(document.getElementById("largura").value);
+
+if(!nome || !comprimento || !largura){
+alert("Preencha todos os campos.");
+return;
+}
+
+const areaPeca=(comprimento*largura)/10000;
+
+pecas.push({
+nome,
+comprimento,
+largura,
+area:areaPeca
+});
+
+area+=areaPeca;
+
+document.getElementById("lista").innerHTML+=`
+<tr>
+<td>${nome}</td>
+<td>${comprimento} x ${largura} cm</td>
+<td>${areaPeca.toFixed(2)} m²</td>
+</tr>
+`;
+
+document.getElementById("totalPecas").innerText=pecas.length;
+document.getElementById("areaTotal").innerText=area.toFixed(2)+" m²";
+
+document.getElementById("nome").value="";
+document.getElementById("comprimento").value="";
+document.getElementById("largura").value="";
+}
+
+function gerarPlano(){
+
+if(pecas.length===0){
+alert("Adicione pelo menos uma peça.");
+return;
+}
+
+document.getElementById("plano").style.display="block";
+
+document.getElementById("resultado").innerText=
+"Plano preliminar gerado para "+pecas.length+
+" peça(s), totalizando "+area.toFixed(2)+" m².";
+
+}
+
+</script>
+
+</body>
+</html>
