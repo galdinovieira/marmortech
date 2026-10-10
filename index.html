@@ -1,1 +1,112 @@
-
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101d35">
+<title>Marmortech | Gestão de Corte</title>
+<style>
+:root{--navy:#101d35;--gold:#d8ad59;--bg:#f3f5f9;--text:#182238;--muted:#6c778b;--line:#e1e6ef}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:9px;padding:12px 15px;font-weight:bold}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}.sidebar{background:var(--navy);color:white;padding:24px 18px}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:35px}.logo{width:44px;height:44px;border:2px solid var(--gold);border-radius:12px;display:grid;place-items:center;color:var(--gold);font-weight:bold;font-size:23px}
+.brand small{display:block;color:#b7c3d6;margin-top:4px}.nav{padding:12px;background:#263958;border-left:3px solid var(--gold);border-radius:8px}
+main{padding:25px;max-width:1500px;width:100%;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px}
+.eyebrow{color:#a77b28;font-size:12px;font-weight:bold;letter-spacing:1.4px}h1{margin:7px 0;font-size:30px}h2{font-size:18px;margin:0}.sub,.help,.muted{color:var(--muted)}.help{font-size:13px;margin:5px 0 15px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}.stat,.panel{background:white;border:1px solid var(--line);border-radius:14px;box-shadow:0 4px 18px #14244308}
+.stat{padding:16px}.stat label,.stat small{display:block;color:var(--muted);font-size:13px}.stat strong{display:block;font-size:25px;margin:7px 0}
+.layout{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(0,1.3fr);gap:16px;align-items:start}.panel{padding:18px;margin-bottom:16px;min-width:0}
+.panelhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:11px;min-width:0}.field label{font-size:12px;font-weight:bold;color:#566176}
+.field input,.field select{width:100%;padding:11px;border:1px solid #d8deea;border-radius:9px;background:white;min-width:0}
+.primary{background:var(--navy);color:white}.gold{background:var(--gold);color:#1d2637}.light{background:#edf1f7;color:var(--navy)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.notice{background:#fff8e8;border:1px solid #f0dcae;color:#6c5526;padding:11px;border-radius:9px;font-size:12px;margin-top:12px}
+.pieces{display:grid;gap:8px}.piece{border:1px solid var(--line);border-radius:9px;padding:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.piece small{display:block;color:var(--muted);margin-top:4px}.del{background:#fff0f0;color:#c34d4d;padding:8px}.empty{padding:22px;text-align:center;color:var(--muted);border:1px dashed #ccd4e2;border-radius:10px}
+.slabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.slab{border:1px solid var(--line);border-radius:11px;padding:12px;background:#fcfdff;min-width:0}
+.slabtitle{display:flex;justify-content:space-between;font-weight:bold;margin-bottom:8px}.canvas{width:100%;aspect-ratio:2.8/1;border:2px solid #53627b;background:#f4f6fa;position:relative;overflow:hidden;margin-top:9px}
+.cut{position:absolute;border:1px solid #8c6b30;background:#f1d9a4;color:#4a391e;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;line-height:1.15;padding:2px;overflow:hidden;overflow-wrap:anywhere}
+.bar{height:7px;background:#e9edf4;border-radius:8px;overflow:hidden;margin:9px 0}.bar span{display:block;height:100%;background:var(--gold)}
+.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;border-bottom:1px solid var(--line);padding:9px 7px;white-space:nowrap}th{color:var(--muted);font-size:11px;text-transform:uppercase}[hidden]{display:none!important}
+@media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{padding:14px 17px}.brand{margin:0}.nav{display:none}.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:15px}}
+@media(max-width:520px){main{padding:11px}.top{align-items:flex-start;flex-direction:column}.stat{padding:12px}.stat strong{font-size:22px}.panel{padding:13px}.actions button{flex:1}}
+@media print{.sidebar,.actions,#calc,.del{display:none!important}.app{display:block}main{padding:0}body{background:white}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"><div class="brand"><div class="logo">M</div><div><b>MARMORTECH</b><small>Gestão inteligente de corte</small></div></div><div class="nav">▦ &nbsp; Plano de corte</div></aside>
+<main>
+<header class="top"><div><div class="eyebrow">PRODUÇÃO · INTELIGÊNCIA DE CORTE</div><h1>Plano de corte multichapas</h1><div class="sub">Calcule quantas chapas seu serviço precisa e visualize a distribuição das peças.</div></div><b>● Sistema de estimativa</b></header>
+<section class="stats">
+<div class="stat"><label>Peças cadastradas</label><strong id="sp">0</strong><small>Unidades para cortar</small></div>
+<div class="stat"><label>Chapas estimadas</label><strong id="ss">0</strong><small>Para o serviço</small></div>
+<div class="stat"><label>Área das peças</label><strong id="sa">0 m²</strong><small>Área solicitada</small></div>
+<div class="stat"><label>Aproveitamento médio</label><strong id="su">0%</strong><small>Estimativa</small></div>
+</section>
+<div class="layout">
+<section>
+<div class="panel"><div class="panelhead"><div><h2>01. Configuração da chapa</h2><p class="help">Medidas em milímetros.</p></div></div>
+<div class="fields">
+<div class="field"><label for="sw">Largura (mm)</label><input id="sw" type="number" value="3000" min="1"></div>
+<div class="field"><label for="sh">Altura (mm)</label><input id="sh" type="number" value="1800" min="1"></div>
+<div class="field"><label for="mg">Margem de segurança (mm)</label><input id="mg" type="number" value="20" min="0"></div>
+<div class="field"><label for="kr">Espessura do disco (mm)</label><input id="kr" type="number" value="5" min="0"></div>
+</div><div class="field"><label for="mat">Material / serviço</label><input id="mat" placeholder="Ex.: Granito Preto São Gabriel"></div>
+<div class="notice">Estimativa aproximada. Não considera veios, defeitos, recortes internos, cubas, furos ou formatos irregulares. Confira o plano antes do corte.</div></div>
+<div class="panel"><div class="panelhead"><div><h2>02. Adicionar peças</h2><p class="help">Informe dimensões e quantidade.</p></div></div>
+<div class="field"><label for="pn">Nome da peça</label><input id="pn" placeholder="Ex.: Bancada cozinha"></div>
+<div class="fields">
+<div class="field"><label for="pw">Largura (mm)</label><input id="pw" type="number" placeholder="1200" min="1"></div>
+<div class="field"><label for="ph">Comprimento (mm)</label><input id="ph" type="number" placeholder="600" min="1"></div>
+<div class="field"><label for="pq">Quantidade</label><input id="pq" type="number" value="1" min="1"></div>
+<div class="field"><label for="rot">Rotação</label><select id="rot"><option value="1">Permitir girar 90°</option><option value="0">Orientação fixa</option></select></div>
+</div><div class="actions"><button class="primary" id="add">＋ Adicionar peça</button><button class="light" id="clear">Limpar lista</button></div></div>
+<div class="panel"><div class="panelhead"><div><h2>Lista de peças</h2><p class="help">Confira as quantidades cadastradas.</p></div></div><div id="list" class="pieces"><div class="empty">Nenhuma peça adicionada.</div></div></div>
+</section>
+<section>
+<div class="panel"><div class="panelhead"><div><h2>03. Resultado do plano</h2><p class="help">Distribuição estimada por chapa.</p></div><button class="gold" id="calc">Calcular plano</button></div>
+<div id="intro" class="empty">Adicione as peças e toque em “Calcular plano”.</div><div id="results" class="slabs"></div><div id="note" class="notice" hidden></div></div>
+<div class="panel"><div class="panelhead"><div><h2>Resumo do serviço</h2><p class="help" id="service">Material não informado</p></div><button class="light" id="print">Imprimir / PDF</button></div>
+<div class="tablewrap"><table><thead><tr><th>Chapa</th><th>Peças</th><th>Área usada</th><th>Aproveitamento</th></tr></thead><tbody id="summary"><tr><td colspan="4">O resultado aparecerá aqui.</td></tr></tbody></table></div></div>
+</section></div></main></div>
+<script>
+const $=id=>document.getElementById(id), n=id=>Math.max(0,Number($(id).value)||0), fmt=x=>x.toLocaleString('pt-BR',{maximumFractionDigits:2});let pieces=[];
+function esc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderList(){
+$('sp').textContent=pieces.reduce((s,p)=>s+p.q,0);
+$('list').innerHTML=pieces.length?pieces.map((p,i)=>`<div class="piece"><div><b>${esc(p.name)} × ${p.q}</b><small>${p.w} × ${p.h} mm · ${p.rotate?'Giro permitido':'Orientação fixa'}</small></div><button class="del" data-index="${i}">Remover</button></div>`).join(''):'<div class="empty">Nenhuma peça adicionada.</div>';
+document.querySelectorAll('[data-index]').forEach(b=>b.onclick=()=>{pieces.splice(Number(b.dataset.index),1);renderList();resetResults()})
+}
+function resetResults(){$('intro').hidden=false;$('intro').textContent='Lista alterada. Calcule novamente para atualizar.';$('results').innerHTML='';$('note').hidden=true;$('summary').innerHTML='<tr><td colspan="4">Calcule o plano para ver o resumo.</td></tr>';$('ss').textContent='0';$('sa').textContent='0 m²';$('su').textContent='0%'}
+$('add').onclick=()=>{const w=n('pw'),h=n('ph'),q=Math.floor(n('pq'));if(!w||!h||!q){alert('Informe largura, comprimento e quantidade válidos.');return}pieces.push({name:$('pn').value.trim()||'Peça '+(pieces.length+1),w,h,q,rotate:$('rot').value==='1'});renderList();resetResults();$('pn').value='';$('pw').value='';$('ph').value='';$('pq').value='1'};
+$('clear').onclick=()=>{if(pieces.length&&!confirm('Apagar todas as peças?'))return;pieces=[];renderList();resetResults()};$('print').onclick=()=>window.print();
+$('calc').onclick=()=>{
+const W=n('sw')-2*n('mg'),H=n('sh')-2*n('mg'),kerf=n('kr');if(W<=0||H<=0){alert('Confira as medidas da chapa e a margem.');return}
+const items=[];pieces.forEach(p=>{for(let i=0;i<p.q;i++)items.push({...p,area:p.w*p.h})});if(!items.length){alert('Adicione pelo menos uma peça.');return}
+for(const p of items){if(!((p.w<=W&&p.h<=H)||(p.rotate&&p.h<=W&&p.w<=H))){alert('A peça "'+p.name+'" não cabe na chapa, mesmo girando.');return}}
+items.sort((a,b)=>Math.max(b.w,b.h)-Math.max(a.w,a.h)||b.area-a.area);const slabs=[];
+for(const p of items){
+const choices=[];
+slabs.forEach((slab,si)=>{
+slab.rows.forEach((row,ri)=>{
+if(p.h<=row.height&&p.w+kerf<=W-row.x)choices.push({si,ri,w:p.w,h:p.h,rot:false,score:(row.height-p.h)*W+W-row.x-p.w});
+if(p.rotate&&p.w<=row.height&&p.h+kerf<=W-row.x)choices.push({si,ri,w:p.h,h:p.w,rot:true,score:(row.height-p.w)*W+W-row.x-p.h+1})
+});
+const y=slab.rows.reduce((s,r)=>s+r.height+kerf,0);
+[false,true].forEach(rot=>{if(rot&&!p.rotate)return;const w=rot?p.h:p.w,h=rot?p.w:p.h;if(w<=W&&h<=H&&y+h<=H)choices.push({si,ri:-1,w,h,rot,score:(H-y-h)*W+W-w})})
+});
+choices.sort((a,b)=>a.score-b.score);let c=choices[0];
+if(!c){const si=slabs.length;slabs.push({rows:[],pieces:[],area:0});const opts=[{w:p.w,h:p.h,rot:false},{w:p.h,h:p.w,rot:true}];c=opts.find(o=>(!o.rot||p.rotate)&&o.w<=W&&o.h<=H);if(!c){alert('Não foi possível encaixar: '+p.name);return}c={...c,si,ri:-1}}
+const slab=slabs[c.si];let row;if(c.ri===-1){const y=slab.rows.reduce((s,r)=>s+r.height+kerf,0);row={x:0,y,height:c.h};slab.rows.push(row)}else row=slab.rows[c.ri];
+slab.pieces.push({...p,x:row.x,y:row.y,w:c.w,h:c.h,rotated:c.rot});row.x+=c.w+kerf;row.height=Math.max(row.height,c.h);slab.area+=p.area;
+}
+const usable=W*H,total=items.reduce((s,p)=>s+p.area,0),avg=100*total/(usable*slabs.length);
+$('ss').textContent=slabs.length;$('sa').textContent=fmt(total/1e6)+' m²';$('su').textContent=fmt(avg)+'%';$('service').textContent=$('mat').value.trim()||'Material não informado';$('intro').hidden=true;$('note').hidden=false;$('note').textContent='Estimativa: '+slabs.length+' chapa(s). Encaixe aproximado; confira antes de cortar.';
+$('results').innerHTML=slabs.map((slab,i)=>{const u=100*slab.area/usable,cuts=slab.pieces.map(p=>`<div class="cut" title="${esc(p.name)}" style="left:${100*p.x/W}%;top:${100*p.y/H}%;width:${100*p.w/W}%;height:${100*p.h/H}%">${esc(p.name)}<br>${p.w} × ${p.h}</div>`).join('');return `<div class="slab"><div class="slabtitle"><span>Chapa ${i+1}</span><span>${fmt(u)}%</span></div><div class="muted">${slab.pieces.length} peça(s) · ${fmt(slab.area/1e6)} m²</div><div class="canvas">${cuts}</div><div class="bar"><span style="width:${Math.min(100,u)}%"></span></div><div class="muted">Aproveitamento: ${fmt(u)}%</div></div>`}).join('');
+$('summary').innerHTML=slabs.map((s,i)=>`<tr><td>Chapa ${i+1}</td><td>${s.pieces.length}</td><td>${fmt(s.area/1e6)} m²</td><td>${fmt(100*s.area/usable)}%</td></tr>`).join('');
+};renderList();
+</script>
+</body>
+</html>
