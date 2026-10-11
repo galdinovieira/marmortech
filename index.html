@@ -123,8 +123,8 @@ body.printing-pagination #technicalSheet{display:block!important}
     <div class="fields">
       <div class="field"><label for="pgMaterial">Material / padrão da textura</label><input id="pgMaterial" placeholder="Ex.: quartzito com veios marcados"></div>
       <div class="field"><label for="pgDirection">Sentido principal dos veios na chapa</label><select id="pgDirection"><option value="vertical">Veios no sentido do comprimento</option><option value="horizontal">Veios no sentido da largura</option><option value="diagonal">Veios diagonais / irregular</option></select></div>
-      <div class="field"><label for="pgW">Largura útil da chapa (mm)</label><input id="pgW" type="number" min="1" value="2960"></div>
-      <div class="field"><label for="pgH">Comprimento útil da chapa (mm)</label><input id="pgH" type="number" min="1" value="1760"></div>
+      <div class="field"><label for="pgW">Comprimento útil da chapa (mm)</label><input id="pgW" type="number" min="1" value="2960"></div>
+      <div class="field"><label for="pgH">Largura útil da chapa (mm)</label><input id="pgH" type="number" min="1" value="1760"></div>
       <div class="field"><label for="pgKerf">Espessura do disco (mm)</label><input id="pgKerf" type="number" min="0" value="5"></div>
       <div class="field"><label for="pgNote">Observações sobre a paginação</label><input id="pgNote" placeholder="Ex.: veio deve continuar da esquerda para direita"></div>
     </div>
@@ -231,7 +231,7 @@ $('pgAdd').onclick=()=>{
 };
 $('pgClear').onclick=()=>{if(paginationPieces.length&&!confirm('Apagar todas as peças da paginação?'))return;paginationPieces=[];lastPagination=[];renderPaginationList();$('pgResults').innerHTML='';$('pgSummary').textContent='Cadastre as peças e toque em “Montar paginação”.'};
 function buildPagination(){
-  const W=Number($('pgW').value),H=Number($('pgH').value),kerf=Number($('pgKerf').value)||0;
+  const W=Number($('pgH').value),H=Number($('pgW').value),kerf=Number($('pgKerf').value)||0;
   if(!(W>0&&H>0)){alert('Informe dimensões úteis válidas para a chapa.');return}
   if(!paginationPieces.length){alert('Adicione pelo menos uma peça à paginação.');return}
   const expanded=[];
