@@ -119,43 +119,49 @@ body.printing-pagination #technicalSheet{display:block!important}
 <section id="technicalSheet" class="technical-sheet" aria-label="Folha técnica para impressão"></section></div>
 <section id="paginationModePanel" class="mode-panel" hidden>
   <div class="panel">
-    <div class="panelhead"><div><h2>Paginação inteligente de textura</h2><p class="help">Monte o conjunto pela relação entre as peças (tampo, espelhos superior/inferior e laterais). O sistema mantém as posições relativas e não gira as peças automaticamente.</p></div></div>
+    <div class="panelhead"><div><h2>Paginação inteligente de textura</h2><p class="help">Cadastre as peças na sequência visual desejada. O sistema monta uma prévia sem girar as peças automaticamente.</p></div></div>
     <div class="fields">
       <div class="field"><label for="pgMaterial">Material / padrão da textura</label><input id="pgMaterial" placeholder="Ex.: quartzito com veios marcados"></div>
       <div class="field"><label for="pgDirection">Sentido principal dos veios na chapa</label><select id="pgDirection"><option value="vertical">Veios no sentido do comprimento</option><option value="horizontal">Veios no sentido da largura</option><option value="diagonal">Veios diagonais / irregular</option></select></div>
-      <div class="field"><label for="pgW">Comprimento útil da chapa (mm)</label><input id="pgW" type="number" min="1" value="2960"></div>
-      <div class="field"><label for="pgH">Largura útil da chapa (mm)</label><input id="pgH" type="number" min="1" value="1760"></div>
+      <div class="field"><label for="pgW">Largura total da chapa (mm)</label><input id="pgW" type="number" min="1" value="3000"></div>
+      <div class="field"><label for="pgH">Comprimento total da chapa (mm)</label><input id="pgH" type="number" min="1" value="1800"></div>
       <div class="field"><label for="pgKerf">Espessura do disco (mm)</label><input id="pgKerf" type="number" min="0" value="5"></div>
       <div class="field"><label for="pgNote">Observações sobre a paginação</label><input id="pgNote" placeholder="Ex.: veio deve continuar da esquerda para direita"></div>
     </div>
-    <div class="page-warn"><b>Como paginar:</b> cadastre primeiro a peça de referência (por exemplo, Tampo bancada). Depois, no mesmo grupo, adicione cada espelho e escolha sua posição em relação à peça anterior: direita, esquerda, acima ou abaixo. Use um grupo por conjunto de bancada. O desenho respeita essa geometria, mas a continuidade exata dos veios ainda precisa ser conferida na chapa real.</div>
+    <div class="page-warn">Monte a bancada peça por peça: escolha uma peça base e diga em relação a qual peça cada nova peça ficará à esquerda, à direita, acima ou abaixo. Não é necessário criar grupos. A borda da chapa não tem margem de segurança nesta aba; a espessura do disco só é considerada entre peças.</div>
   </div>
   <div class="pagination-grid">
     <div>
       <div class="panel">
-        <div class="panelhead"><div><h2>01. Cadastrar peças paginadas</h2><p class="help">Use um grupo para cada conjunto e indique onde a nova peça fica em relação à peça anterior.</p></div></div>
-        <div class="page-piece-row">
-          <div class="field"><label for="pgName">Nome da peça</label><input id="pgName" placeholder="Ex.: Lateral A"></div>
-          <div class="field"><label for="pgPieceW">Comprimento (mm)</label><input id="pgPieceW" type="number" min="1" placeholder="1200"></div>
-          <div class="field"><label for="pgPieceH">Largura (mm)</label><input id="pgPieceH" type="number" min="1" placeholder="600"></div>
-          <div class="field"><label for="pgQty">Qtd.</label><input id="pgQty" type="number" min="1" value="1"></div>
-          <div class="field"><label for="pgGroup">Grupo / faixa</label><input id="pgGroup" placeholder="Ex.: Ilha"></div>
-          <div class="field"><label for="pgOrder">Ordem</label><input id="pgOrder" type="number" min="1" value="1"></div>
+        <div class="panelhead"><div><h2>01. Montar peças da bancada</h2><p class="help">Cadastre a peça base primeiro. Para cada peça seguinte, escolha a peça de referência e o lado onde ela será colocada.</p></div></div>
+        <div class="fields">
+          <div class="field"><label for="pgName">Nome da peça</label><input id="pgName" placeholder="Ex.: Tampo principal"></div>
+          <div class="field"><label for="pgPieceW">Largura (mm)</label><input id="pgPieceW" type="number" min="1" placeholder="1600"></div>
+          <div class="field"><label for="pgPieceH">Comprimento (mm)</label><input id="pgPieceH" type="number" min="1" placeholder="600"></div>
+          <div class="field"><label for="pgQty">Quantidade</label><input id="pgQty" type="number" min="1" value="1"></div>
         </div>
         <div class="fields" style="margin-top:10px">
-          <div class="field"><label for="pgOrientation">Orientação da textura na peça</label><select id="pgOrientation"><option value="vertical">Veios no comprimento</option><option value="horizontal">Veios na largura</option><option value="diagonal">Diagonal / conferir manualmente</option></select></div>
-          <div class="field"><label for="pgEdge">Posição desta peça em relação à anterior</label><select id="pgEdge"><option value="right">À direita</option><option value="left">À esquerda</option><option value="below">Abaixo</option><option value="above">Acima</option><option value="separate">Independente / iniciar novo conjunto</option></select></div>
+          <div class="field"><label for="pgBase">Função da peça</label><select id="pgBase"><option value="no">Peça posicionada em relação a outra</option><option value="yes">Definir como peça base</option></select></div>
+          <div class="field"><label for="pgReference">Posicionar em relação a</label><select id="pgReference"><option value="">Selecione uma peça</option></select></div>
+          <div class="field"><label for="pgPosition">Posição</label><select id="pgPosition"><option value="right">À direita</option><option value="left">À esquerda</option><option value="below">Abaixo</option><option value="above">Acima</option><option value="overlap">Posição manual (coordenadas)</option></select></div>
         </div>
-        <div class="actions"><button class="primary" id="pgAdd">＋ Adicionar à paginação</button><button class="light" id="pgClear">Limpar peças</button></div>
+        <div class="fields" id="pgManualFields" style="margin-top:10px" hidden>
+          <div class="field"><label for="pgX">Coordenada X na chapa (mm)</label><input id="pgX" type="number" value="0"></div>
+          <div class="field"><label for="pgY">Coordenada Y na chapa (mm)</label><input id="pgY" type="number" value="0"></div>
+        </div>
+        <div class="fields" style="margin-top:10px">
+          <div class="field"><label for="pgOrientation">Orientação dos veios</label><select id="pgOrientation"><option value="vertical">Veios no comprimento</option><option value="horizontal">Veios na largura</option><option value="diagonal">Diagonal / conferir manualmente</option></select></div>
+        </div>
+        <div class="actions"><button class="primary" id="pgAdd">＋ Adicionar peça</button><button class="light" id="pgClear">Limpar montagem</button></div>
       </div>
-      <div class="panel"><div class="panelhead"><div><h2>02. Sequência cadastrada</h2><p class="help">Reordene alterando o número da ordem e recalcule.</p></div></div><div id="pgList"><div class="empty">Nenhuma peça paginada cadastrada.</div></div></div>
+      <div class="panel"><div class="panelhead"><div><h2>02. Peças cadastradas</h2><p class="help">Você pode remover e cadastrar novamente para alterar as relações entre peças.</p></div></div><div id="pgList"><div class="empty">Nenhuma peça cadastrada.</div></div></div>
     </div>
     <div>
       <div class="panel">
         <div class="panelhead"><div><h2>03. Prévia da paginação</h2><p class="help">Vista esquemática das peças e das faixas.</p></div><button class="gold" id="pgBuild">Montar paginação</button></div>
         <div id="pgSummary" class="empty">Cadastre as peças e toque em “Montar paginação”.</div>
         <div id="pgResults"></div>
-        <div class="page-warn">A prévia posiciona os espelhos ao redor da peça de referência conforme as relações cadastradas. Ela não analisa automaticamente uma foto da pedra nem prevê exatamente o desenho dos veios. Antes de cortar, confira a chapa física e ajuste a posição para casar a textura.</div>
+        <div class="page-warn">A prévia é um auxílio de planejamento. Antes do corte, confirme a posição dos veios olhando as chapas físicas; o programa não substitui a paginação visual feita com fotos ou inspeção presencial.</div>
         <div class="actions" style="margin-top:12px"><button class="light" id="pgPrint">Imprimir / salvar PDF da paginação</button></div>
       </div>
     </div>
@@ -216,74 +222,74 @@ $('standardModeBtn').onclick=()=>setCutMode('standard');
 $('paginationModeBtn').onclick=()=>setCutMode('pagination');
 
 let paginationPieces=[], lastPagination=[];
-function edgeLabel(edge){return ({right:'à direita da anterior',left:'à esquerda da anterior',below:'abaixo da anterior',above:'acima da anterior',separate:'independente / novo conjunto'})[edge]||edge}
+function refreshPgReferences(){
+ const sel=$('pgReference'),old=sel.value;
+ sel.innerHTML='<option value="">Selecione uma peça</option>'+paginationPieces.map(p=>`<option value="${p.id}">${esc(p.name)} (${p.w} × ${p.h})${p.base?' — BASE':''}</option>`).join('');
+ if(paginationPieces.some(p=>String(p.id)===old))sel.value=old;
+ const hasPieces=paginationPieces.length>0;
+ $('pgBase').value=hasPieces?'no':'yes';
+ $('pgBase').querySelector('option[value="yes"]').disabled=hasPieces;
+ $('pgReference').disabled=!hasPieces;
+ $('pgPosition').disabled=!hasPieces;
+}
+$('pgPosition').onchange=()=>{$('pgManualFields').hidden=$('pgPosition').value!=='overlap'};
 function renderPaginationList(){
-  const list=$('pgList');
-  const sorted=paginationPieces.slice().sort((a,b)=>String(a.group).localeCompare(String(b.group),'pt-BR')||a.order-b.order||a.id-b.id);
-  list.innerHTML=sorted.length?sorted.map(p=>`<div class="page-piece-card"><b>${esc(p.order)}. ${esc(p.name)} × ${p.qty}</b><small>Grupo: ${esc(p.group||'Sem grupo')} · ${p.w} × ${p.h} mm · Textura: ${esc(p.orientation)} · Posição: ${esc(edgeLabel(p.edge))}</small><button class="del" data-pgdel="${p.id}" style="margin-top:8px">Remover</button></div>`).join(''):'<div class="empty">Nenhuma peça paginada cadastrada.</div>';
-  list.querySelectorAll('[data-pgdel]').forEach(b=>b.onclick=()=>{paginationPieces=paginationPieces.filter(p=>p.id!==Number(b.dataset.pgdel));renderPaginationList();$('pgResults').innerHTML='';lastPagination=[];$('pgSummary').textContent='Peças alteradas. Monte novamente a paginação.'});
+ const list=$('pgList');
+ list.innerHTML=paginationPieces.length?paginationPieces.map((p,i)=>`<div class="page-piece-card"><b>${p.base?'★ PEÇA BASE · ':''}${esc(p.name)} · ${p.w} × ${p.h} mm</b><small>${p.qty>1?`Quantidade: ${p.qty} · `:''}${p.base?'Origem da montagem':`Posição: ${({right:'à direita',left:'à esquerda',below:'abaixo',above:'acima',overlap:'coordenadas manuais'})[p.position]} de “${esc(p.refName||'') }”` } · Veios: ${esc(p.orientation)}</small><button class="del" data-pgdel="${p.id}" style="margin-top:8px">Remover</button></div>`).join(''):'<div class="empty">Nenhuma peça cadastrada.</div>';
+ list.querySelectorAll('[data-pgdel]').forEach(b=>b.onclick=()=>{const id=Number(b.dataset.pgdel),wasBase=!!paginationPieces.find(p=>p.id===id)?.base;paginationPieces=paginationPieces.filter(p=>p.id!==id);if(wasBase&&paginationPieces.length){paginationPieces=paginationPieces.filter(p=>p.id!==id);paginationPieces[0].base=true;paginationPieces[0].refId=null;paginationPieces[0].refName='';paginationPieces[0].position='base';paginationPieces[0].x=0;paginationPieces[0].y=0;}renderPaginationList();refreshPgReferences();$('pgResults').innerHTML='';$('pgSummary').textContent='Montagem alterada. Toque em “Montar paginação”.';lastPagination=[]});
+ refreshPgReferences();
 }
 $('pgAdd').onclick=()=>{
-  const w=Number($('pgPieceW').value),h=Number($('pgPieceH').value),qty=Math.floor(Number($('pgQty').value)||0),order=Math.floor(Number($('pgOrder').value)||1);
-  if(!(w>0&&h>0&&qty>0&&order>0)){alert('Informe largura, comprimento, quantidade e ordem válidos.');return}
-  paginationPieces.push({id:Date.now()+Math.random(),name:$('pgName').value.trim()||'Peça '+(paginationPieces.length+1),w,h,qty,group:$('pgGroup').value.trim()||'Conjunto 1',order,orientation:$('pgOrientation').value,edge:$('pgEdge').value});
-  renderPaginationList();$('pgName').value='';$('pgPieceW').value='';$('pgPieceH').value='';$('pgQty').value='1';$('pgOrder').value=String(Math.max(0,...paginationPieces.map(p=>p.order))+1);
+ const w=Number($('pgPieceW').value),h=Number($('pgPieceH').value),qty=Math.floor(Number($('pgQty').value)||0),base=$('pgBase').value==='yes',position=$('pgPosition').value,refId=Number($('pgReference').value);
+ if(!(w>0&&h>0&&qty>0)){alert('Informe largura, comprimento e quantidade válidos.');return}
+ if(!paginationPieces.length&&!base){alert('A primeira peça precisa ser definida como peça base.');return}
+ if(paginationPieces.length&&base){alert('Já existe uma peça base. Remova-a antes de definir outra.');return}
+ if(!base&&!paginationPieces.some(p=>p.id===refId)){alert('Escolha a peça em relação à qual esta peça será posicionada.');return}
+ const ref=paginationPieces.find(p=>p.id===refId);
+ const piece={id:Date.now()+Math.floor(Math.random()*100000),name:$('pgName').value.trim()||'Peça '+(paginationPieces.length+1),w,h,qty,base,refId:base?null:refId,refName:ref?.name||'',position:base?'base':position,x:Number($('pgX').value)||0,y:Number($('pgY').value)||0,orientation:$('pgOrientation').value};
+ paginationPieces.push(piece);renderPaginationList();$('pgName').value='';$('pgPieceW').value='';$('pgPieceH').value='';$('pgQty').value='1';$('pgBase').value='no';$('pgPosition').value='right';$('pgManualFields').hidden=true;
 };
-$('pgClear').onclick=()=>{if(paginationPieces.length&&!confirm('Apagar todas as peças da paginação?'))return;paginationPieces=[];lastPagination=[];renderPaginationList();$('pgResults').innerHTML='';$('pgSummary').textContent='Cadastre as peças e toque em “Montar paginação”.'};
+$('pgClear').onclick=()=>{if(paginationPieces.length&&!confirm('Apagar todas as peças da montagem?'))return;paginationPieces=[];lastPagination=[];renderPaginationList();$('pgResults').innerHTML='';$('pgSummary').textContent='Cadastre a peça base e depois as demais peças.'};
 function buildPagination(){
-  const W=Number($('pgH').value),H=Number($('pgW').value),kerf=Number($('pgKerf').value)||0;
-  if(!(W>0&&H>0)){alert('Informe dimensões úteis válidas para a chapa.');return}
-  if(!paginationPieces.length){alert('Adicione pelo menos uma peça à paginação.');return}
-  const expanded=[];
-  for(const p of paginationPieces){for(let i=0;i<p.qty;i++)expanded.push({...p,instance:i+1,uid:`${p.id}-${i+1}`})}
-  // Constrói cada conjunto como um arranjo conectado. A peça de menor ordem é a referência;
-  // cada peça seguinte é posicionada pela relação declarada com a anterior.
-  const grouped=new Map();
-  expanded.sort((a,b)=>String(a.group).localeCompare(String(b.group),'pt-BR')||a.order-b.order||a.id-b.id||a.instance-b.instance);
-  for(const p of expanded){if(p.w>W||p.h>H){alert(`A peça “${p.name}” (${p.w} × ${p.h} mm) não cabe na chapa útil ${W} × ${H} mm sem girar. A orientação foi preservada.`);return}const key=p.group||'Conjunto 1';if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(p)}
-  const layouts=[];
-  for(const [group,items] of grouped){
-    const placed=[];let minX=0,minY=0,maxX=0,maxY=0;
-    items.forEach((p,index)=>{
-      let x=0,y=0;
-      if(index>0){const prev=placed[index-1];switch(p.edge){case'right':x=prev.x+prev.w+kerf;y=prev.y;break;case'left':x=prev.x-p.w-kerf;y=prev.y;break;case'below':x=prev.x;y=prev.y+prev.h+kerf;break;case'above':x=prev.x;y=prev.y-p.h-kerf;break;case'separate':x=maxX+kerf;y=0;break;default:x=prev.x+prev.w+kerf;y=prev.y}}
-      placed.push({...p,x,y,group});minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x+p.w);maxY=Math.max(maxY,y+p.h);
-    });
-    const bw=maxX-minX,bh=maxY-minY;
-    if(bw>W||bh>H){alert(`O conjunto “${group}” mede ${bw} × ${bh} mm com as relações cadastradas e não cabe em uma chapa ${W} × ${H} mm. Revise as posições ou divida o conjunto.`);return}
-    layouts.push({group,w:bw,h:bh,pieces:placed.map(p=>({...p,x:p.x-minX,y:p.y-minY}))});
+ const W=Number($('pgW').value),H=Number($('pgH').value),kerf=Number($('pgKerf').value)||0;
+ if(!(W>0&&H>0)){alert('Informe dimensões válidas para a chapa.');return}
+ if(!paginationPieces.length||!paginationPieces.some(p=>p.base)){alert('Cadastre uma peça base antes de montar a paginação.');return}
+ const byId=new Map(paginationPieces.map(p=>[p.id,p]));
+ const resolved=new Map();let resolving=new Set();
+ function resolve(p){
+  if(resolved.has(p.id))return resolved.get(p.id);
+  if(resolving.has(p.id))throw new Error('Foi encontrada uma referência circular entre peças.');
+  resolving.add(p.id);let x=0,y=0;
+  if(!p.base){const r=byId.get(p.refId);if(!r)throw new Error(`A peça “${p.name}” referencia uma peça removida. Escolha outra referência.`);const a=resolve(r);
+   if(p.position==='right'){x=a.x+a.w+kerf;y=a.y}
+   else if(p.position==='left'){x=a.x-p.w-kerf;y=a.y}
+   else if(p.position==='below'){x=a.x;y=a.y+a.h+kerf}
+   else if(p.position==='above'){x=a.x;y=a.y-p.h-kerf}
+   else{x=p.x;y=p.y}
   }
-  // Empacota conjuntos completos sem quebrar sua paginação interna.
-  const slabs=[];let slab={pieces:[],x:0,y:0,rowH:0};
-  const newSlab=()=>{if(slab.pieces.length)slabs.push(slab);slab={pieces:[],x:0,y:0,rowH:0}};
-  for(const layout of layouts){
-    if(slab.x+layout.w>W){slab.y+=slab.rowH+kerf;slab.x=0;slab.rowH=0}
-    if(slab.y+layout.h>H){newSlab()}
-    if(layout.w>W||layout.h>H){alert(`O conjunto “${layout.group}” não cabe na chapa.`);return}
-    for(const p of layout.pieces)slab.pieces.push({...p,x:p.x+slab.x,y:p.y+slab.y});
-    slab.x+=layout.w+kerf;slab.rowH=Math.max(slab.rowH,layout.h);
-  }
-  if(slab.pieces.length)slabs.push(slab);
-  const nonempty=slabs.filter(s=>s.pieces.length),area=expanded.reduce((sum,p)=>sum+p.w*p.h,0),capacity=nonempty.length*W*H,eff=capacity?100*area/capacity:0;
-  $('pgSummary').innerHTML=`<b>${nonempty.length} chapa(s) estimada(s)</b><br>${expanded.length} peça(s) · ${layouts.length} conjunto(s) · Área das peças: ${fmt(area/1e6)} m² · Aproveitamento bruto estimado: ${fmt(eff)}%<br><small>Material: ${esc($('pgMaterial').value.trim()||'Não informado')} · Sentido dos veios: ${esc($('pgDirection').selectedOptions[0].text)} · Disco: ${kerf} mm</small>`;
-  $('pgResults').innerHTML=nonempty.map((s,i)=>{const blocks=s.pieces.map(p=>`<div class="page-piece" title="${esc(p.name)}" style="left:${100*p.x/W}%;top:${100*p.y/H}%;width:${100*p.w/W}%;height:${100*p.h/H}%"><b>${esc(p.order)} · ${esc(p.name)}</b><br>${p.w} × ${p.h}<br><small>${esc(p.group)}</small></div>`).join('');return `<div class="page-piece-card"><b>Chapa ${i+1} · ${W} × ${H} mm úteis</b><small>${s.pieces.length} peça(s) · Conjuntos mantidos unidos · ${fmt(100*s.pieces.reduce((sum,p)=>sum+p.w*p.h,0)/(W*H))}% da área útil</small><div class="page-canvas" style="aspect-ratio:${W}/${H}">${blocks}</div><small>Conjuntos: ${[...new Set(s.pieces.map(p=>p.group))].map(esc).join(', ')}</small></div>`}).join('');
-  lastPagination=nonempty.map(s=>({...s,W,H,kerf}));
+  const v={...p,x,y};resolving.delete(p.id);resolved.set(p.id,v);return v;
+ }
+ let positioned;try{positioned=paginationPieces.map(resolve)}catch(e){alert(e.message);return}
+ const instances=[];for(const p of positioned){for(let i=0;i<p.qty;i++)instances.push({...p,instance:i+1,name:p.qty>1?`${p.name} (${i+1})`:p.name})}
+ // Repetições da mesma peça são colocadas lado a lado, sem alterar a posição da peça original.
+ const base=positioned.find(p=>p.base);let maxX=Math.max(...instances.map(p=>p.x+p.w)),maxY=Math.max(...instances.map(p=>p.y+p.h)),minX=Math.min(0,...instances.map(p=>p.x)),minY=Math.min(0,...instances.map(p=>p.y));
+ const shiftX=minX<0?-minX:0,shiftY=minY<0?-minY:0;
+ instances.forEach(p=>{p.x+=shiftX;p.y+=shiftY});maxX+=shiftX;maxY+=shiftY;
+ if(maxX>W||maxY>H){alert(`A montagem ultrapassa a chapa de ${W} × ${H} mm. Área necessária aproximada: ${maxX} × ${maxY} mm. Ajuste as posições ou use uma chapa maior.`);}
+ const overlaps=[];
+ for(let i=0;i<instances.length;i++)for(let j=i+1;j<instances.length;j++){const a=instances[i],b=instances[j];if(a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y)overlaps.push(`${a.name} e ${b.name}`)}
+ const area=instances.reduce((sum,p)=>sum+p.w*p.h,0),eff=100*area/(W*H);
+ $('pgSummary').innerHTML=`<b>Montagem livre · ${instances.length} peça(s)</b><br>Área das peças: ${fmt(area/1e6)} m² · Aproveitamento bruto: ${fmt(eff)}%<br><small>Chapa: ${W} × ${H} mm · Margem nas bordas: 0 mm · Disco entre peças: ${kerf} mm · Material: ${esc($('pgMaterial').value.trim()||'Não informado')}</small>${maxX>W||maxY>H?'<p style="color:#a33"><b>Atenção:</b> a montagem ultrapassa os limites da chapa.</p>':''}${overlaps.length?`<p style="color:#a33"><b>Atenção: peças sobrepostas</b> — ${overlaps.map(esc).join('; ')}. Confira as posições.</p>`:''}`;
+ const canvasW=Math.max(W,maxX),canvasH=Math.max(H,maxY);
+ $('pgResults').innerHTML=`<div class="page-piece-card"><b>Chapa · ${W} × ${H} mm</b><small>Peças posicionadas em relação à peça base escolhida. As bordas não têm margem de segurança.</small><div class="page-canvas" style="aspect-ratio:${canvasW}/${canvasH};${maxX>W||maxY>H?'border-color:#b33':''}">${instances.map((p,i)=>`<div class="page-piece" title="${esc(p.name)}" style="left:${100*p.x/canvasW}%;top:${100*p.y/canvasH}%;width:${100*p.w/canvasW}%;height:${100*p.h/canvasH}%"><b>${esc(p.name)}</b><br>${p.w} × ${p.h} mm${p.base?'<br><small>PEÇA BASE</small>':''}</div>`).join('')}</div><small>Desenho esquemático proporcional. Confirme a continuidade real dos veios na chapa física.</small></div>`;
+ lastPagination=[{pieces:instances,W,H,kerf,area,canvasW,canvasH}];
 }
 $('pgBuild').onclick=buildPagination;
 $('pgPrint').onclick=()=>{
-  if(!lastPagination.length){alert('Monte a paginação antes de imprimir.');return}
-  const root=$('technicalSheet');
-  const old=root.innerHTML;
-  const material=esc($('pgMaterial').value.trim()||'Material não informado');
-  root.innerHTML=lastPagination.map((s,i)=>{
-    const ratio=Math.min(1,270/s.W,175/s.H),width=s.W*ratio,height=s.H*ratio;
-    const blocks=s.pieces.map(p=>`<div class="tech-piece" style="left:${p.x*ratio}mm;top:${p.y*ratio}mm;width:${p.w*ratio}mm;height:${p.h*ratio}mm">${esc(p.order)} · ${esc(p.name)}<br>${p.w} × ${p.h} mm</div>`).join('');
-    return `<article class="technical-page"><h2>MARMORTECH · PLANO DE PAGINAÇÃO</h2><div class="tech-dim">Material: ${material} · Chapa ${i+1} de ${lastPagination.length} · Medida útil: ${s.W} × ${s.H} mm · Disco: ${s.kerf} mm</div><div class="tech-dim">Sentido dos veios: ${esc($('pgDirection').selectedOptions[0].text)} · Observações: ${esc($('pgNote').value||'—')}</div><div class="tech-slab" style="width:${width}mm;height:${height}mm">${blocks}</div><div class="print-warning">Prévia esquemática de paginação. Conferir veios reais, sequência e medidas antes de cortar.</div></article>`;
-  }).join('');
-  document.body.classList.add('printing-pagination');
-  window.print();
-  document.body.classList.remove('printing-pagination');
-  root.innerHTML=old;
+ if(!lastPagination.length){alert('Monte a paginação antes de imprimir.');return}
+ const root=$('technicalSheet'),old=root.innerHTML,material=esc($('pgMaterial').value.trim()||'Material não informado');
+ root.innerHTML=lastPagination.map((s,i)=>{const ratio=Math.min(1,270/s.canvasW,175/s.canvasH),width=s.canvasW*ratio,height=s.canvasH*ratio;const blocks=s.pieces.map(p=>`<div class="tech-piece" style="left:${p.x*ratio}mm;top:${p.y*ratio}mm;width:${p.w*ratio}mm;height:${p.h*ratio}mm">${esc(p.name)}<br>${p.w} × ${p.h} mm</div>`).join('');return `<article class="technical-page"><h2>MARMORTECH · PLANO DE PAGINAÇÃO</h2><div class="tech-dim">Material: ${material} · Chapa ${i+1} · Medida nominal: ${s.W} × ${s.H} mm · Margem nas bordas: 0 mm · Disco interno: ${s.kerf} mm</div><div class="tech-dim">Sentido dos veios: ${esc($('pgDirection').selectedOptions[0].text)} · Observações: ${esc($('pgNote').value||'—')}</div><div class="tech-slab" style="width:${width}mm;height:${height}mm">${blocks}</div><div class="print-warning">Prévia esquemática de paginação. Conferir veios reais, sequência e medidas antes de cortar.</div></article>`}).join('');
+ document.body.classList.add('printing-pagination');window.print();document.body.classList.remove('printing-pagination');root.innerHTML=old;
 };
-renderList();renderRemnants();renderSheets();
+renderList();renderRemnants();renderSheets();refreshPgReferences();
 </script></body></html>
