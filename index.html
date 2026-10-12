@@ -224,13 +224,12 @@ $('paginationModeBtn').onclick=()=>setCutMode('pagination');
 let paginationPieces=[], lastPagination=[];
 function refreshPgReferences(){
  const sel=$('pgReference'),old=sel.value;
- sel.innerHTML='<option value="">Selecione uma peça</option>'+paginationPieces.map(p=>`<option value="${p.id}">${esc(p.name)} (${p.w} × ${p.h})${p.base?' — BASE':''}</option>`).join('');
+ sel.innerHTML='<option value="">Selecione uma peça</option>'+paginationPieces.map(p=>`<option value="${p.id}">${esc(p.name)} (${p.w} × ${p.h})${p.base?' — PEÇA BASE':''}</option>`).join('');
  if(paginationPieces.some(p=>String(p.id)===old))sel.value=old;
- const hasPieces=paginationPieces.length>0;
- $('pgBase').value=hasPieces?'no':'yes';
- $('pgBase').querySelector('option[value="yes"]').disabled=hasPieces;
- $('pgReference').disabled=!hasPieces;
- $('pgPosition').disabled=!hasPieces;
+ $('pgBase').value='no';
+ $('pgBase').querySelector('option[value="yes"]').disabled=false;
+ $('pgReference').disabled=!paginationPieces.length;
+ $('pgPosition').disabled=!paginationPieces.length;
 }
 $('pgPosition').onchange=()=>{$('pgManualFields').hidden=$('pgPosition').value!=='overlap'};
 function renderPaginationList(){
@@ -243,7 +242,6 @@ $('pgAdd').onclick=()=>{
  const w=Number($('pgPieceW').value),h=Number($('pgPieceH').value),qty=Math.floor(Number($('pgQty').value)||0),base=$('pgBase').value==='yes',position=$('pgPosition').value,refId=Number($('pgReference').value);
  if(!(w>0&&h>0&&qty>0)){alert('Informe largura, comprimento e quantidade válidos.');return}
  if(!paginationPieces.length&&!base){alert('A primeira peça precisa ser definida como peça base.');return}
- if(paginationPieces.length&&base){alert('Já existe uma peça base. Remova-a antes de definir outra.');return}
  if(!base&&!paginationPieces.some(p=>p.id===refId)){alert('Escolha a peça em relação à qual esta peça será posicionada.');return}
  const ref=paginationPieces.find(p=>p.id===refId);
  const piece={id:Date.now()+Math.floor(Math.random()*100000),name:$('pgName').value.trim()||'Peça '+(paginationPieces.length+1),w,h,qty,base,refId:base?null:refId,refName:ref?.name||'',position:base?'base':position,x:Number($('pgX').value)||0,y:Number($('pgY').value)||0,orientation:$('pgOrientation').value};
@@ -253,43 +251,105 @@ $('pgClear').onclick=()=>{if(paginationPieces.length&&!confirm('Apagar todas as 
 function buildPagination(){
  const W=Number($('pgW').value),H=Number($('pgH').value),kerf=Number($('pgKerf').value)||0;
  if(!(W>0&&H>0)){alert('Informe dimensões válidas para a chapa.');return}
- if(!paginationPieces.length||!paginationPieces.some(p=>p.base)){alert('Cadastre uma peça base antes de montar a paginação.');return}
- const byId=new Map(paginationPieces.map(p=>[p.id,p]));
- const resolved=new Map();let resolving=new Set();
- function resolve(p){
-  if(resolved.has(p.id))return resolved.get(p.id);
+ if(!paginationPieces.length||!paginationPieces.some(p=>p.base)){alert('Cadastre pelo menos uma peça base antes de montar a paginação.');return}
+ const byId=new Map(paginationPieces.map(p=>[p.id,p])), roots=new Map(), resolving=new Set();
+ function rootOf(p){
+  if(roots.has(p.id))return roots.get(p.id);
   if(resolving.has(p.id))throw new Error('Foi encontrada uma referência circular entre peças.');
-  resolving.add(p.id);let x=0,y=0;
-  if(!p.base){const r=byId.get(p.refId);if(!r)throw new Error(`A peça “${p.name}” referencia uma peça removida. Escolha outra referência.`);const a=resolve(r);
-   if(p.position==='right'){x=a.x+a.w+kerf;y=a.y}
-   else if(p.position==='left'){x=a.x-p.w-kerf;y=a.y}
-   else if(p.position==='below'){x=a.x;y=a.y+a.h+kerf}
-   else if(p.position==='above'){x=a.x;y=a.y-p.h-kerf}
-   else{x=p.x;y=p.y}
-  }
-  const v={...p,x,y};resolving.delete(p.id);resolved.set(p.id,v);return v;
+  resolving.add(p.id);
+  let root;
+  if(p.base)root=p.id;
+  else {const r=byId.get(p.refId);if(!r)throw new Error(`A peça “${p.name}” referencia uma peça removida.`);root=rootOf(r);}
+  resolving.delete(p.id);roots.set(p.id,root);return root;
  }
- let positioned;try{positioned=paginationPieces.map(resolve)}catch(e){alert(e.message);return}
- const instances=[];for(const p of positioned){for(let i=0;i<p.qty;i++)instances.push({...p,instance:i+1,name:p.qty>1?`${p.name} (${i+1})`:p.name})}
- // Repetições da mesma peça são colocadas lado a lado, sem alterar a posição da peça original.
- const base=positioned.find(p=>p.base);let maxX=Math.max(...instances.map(p=>p.x+p.w)),maxY=Math.max(...instances.map(p=>p.y+p.h)),minX=Math.min(0,...instances.map(p=>p.x)),minY=Math.min(0,...instances.map(p=>p.y));
- const shiftX=minX<0?-minX:0,shiftY=minY<0?-minY:0;
- instances.forEach(p=>{p.x+=shiftX;p.y+=shiftY});maxX+=shiftX;maxY+=shiftY;
- if(maxX>W||maxY>H){alert(`A montagem ultrapassa a chapa de ${W} × ${H} mm. Área necessária aproximada: ${maxX} × ${maxY} mm. Ajuste as posições ou use uma chapa maior.`);}
+ let groups=new Map();
+ try{
+  paginationPieces.forEach(p=>{const rid=rootOf(p);if(!groups.has(rid))groups.set(rid,[]);groups.get(rid).push(p)});
+ }catch(e){alert(e.message);return}
+ const placed=[], allInstances=[];
+ function localize(group){
+  const local=new Map(), busy=new Set();
+  function resolve(p){
+   if(local.has(p.id))return local.get(p.id);
+   if(busy.has(p.id))throw new Error('Foi encontrada uma referência circular entre peças.');
+   busy.add(p.id);let x=0,y=0;
+   if(!p.base){
+    const r=byId.get(p.refId);if(!r)throw new Error(`A peça “${p.name}” referencia uma peça removida.`);
+    const a=resolve(r);
+    if(p.position==='right'){x=a.x+a.w+kerf;y=a.y}
+    else if(p.position==='left'){x=a.x-p.w-kerf;y=a.y}
+    else if(p.position==='below'){x=a.x;y=a.y+a.h+kerf}
+    else if(p.position==='above'){x=a.x;y=a.y-p.h-kerf}
+    else{x=p.x;y=p.y}
+   }
+   const v={...p,x,y};busy.delete(p.id);local.set(p.id,v);return v;
+  }
+  return group.flatMap(p=>{const q=resolve(p);return Array.from({length:p.qty},(_,i)=>({...q,instance:i+1,name:p.qty>1?`${p.name} (${i+1})`:p.name}))});
+ }
+ let first=true, tried=0;
+ for(const [rootId,group] of groups){
+  let local;try{local=localize(group)}catch(e){alert(e.message);return}
+  // Normalize each group's local coordinates around its top-left, preserving all piece-to-piece relationships.
+  const minX=Math.min(...local.map(p=>p.x)),minY=Math.min(...local.map(p=>p.y));
+  local=local.map(p=>({...p,x:p.x-minX,y:p.y-minY}));
+  const gw=Math.max(...local.map(p=>p.x+p.w)),gh=Math.max(...local.map(p=>p.y+p.h));
+  let chosen=null;
+  if(first){chosen={x:0,y:0};first=false;}
+  else{
+   // Try up to 1,000 deterministic candidate placements formed from sheet edges and occupied-piece edges.
+   const candidates=[{x:0,y:0}];
+   for(const q of placed){candidates.push({x:q.x+q.w+kerf,y:0},{x:0,y:q.y+q.h+kerf},{x:q.x+q.w+kerf,y:q.y},{x:q.x,y:q.y+q.h+kerf},{x:q.x+q.w+kerf,y:q.y+q.h+kerf});}
+   const step=Math.max(25,Math.min(100,Math.floor(Math.min(W,H)/25)||25));
+   for(let y=0;y<=H-gh&&candidates.length<1000;y+=step)for(let x=0;x<=W-gw&&candidates.length<1000;x+=step)candidates.push({x,y});
+   let bestScore=Infinity;
+   for(const c of candidates.slice(0,1000)){
+    tried++;if(c.x+gw>W||c.y+gh>H)continue;
+    const trial=local.map(p=>({...p,x:p.x+c.x,y:p.y+c.y}));
+    const collision=trial.some(a=>placed.some(b=>a.x<b.x+b.w+kerf-0.001&&a.x+a.w+kerf>b.x&&a.y<b.y+b.h+kerf-0.001&&a.y+a.h+kerf>b.y));
+    if(collision)continue;
+    const score=Math.max(...placed.map(p=>p.x+p.w),c.x+gw)*Math.max(...placed.map(p=>p.y+p.h),c.y+gh);
+    if(score<bestScore){bestScore=score;chosen=c;}
+   }
+   if(!chosen){alert(`Não foi possível encaixar a nova peça-base “${group.find(p=>p.base)?.name||'Peça base'}” junto das montagens existentes dentro da chapa. Foram avaliadas até 1.000 posições. A montagem anterior foi mantida; tente reduzir as peças ou usar uma chapa maior.`);return}
+  }
+  const finalGroup=local.map(p=>({...p,x:p.x+chosen.x,y:p.y+chosen.y,base:p.base,baseId:rootId}));
+  placed.push(...finalGroup);allInstances.push(...finalGroup);
+ }
+ const outside=allInstances.some(p=>p.x<0||p.y<0||p.x+p.w>W||p.y+p.h>H);
  const overlaps=[];
- for(let i=0;i<instances.length;i++)for(let j=i+1;j<instances.length;j++){const a=instances[i],b=instances[j];if(a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y)overlaps.push(`${a.name} e ${b.name}`)}
- const area=instances.reduce((sum,p)=>sum+p.w*p.h,0),eff=100*area/(W*H);
- $('pgSummary').innerHTML=`<b>Montagem livre · ${instances.length} peça(s)</b><br>Área das peças: ${fmt(area/1e6)} m² · Aproveitamento bruto: ${fmt(eff)}%<br><small>Chapa: ${W} × ${H} mm · Margem nas bordas: 0 mm · Disco entre peças: ${kerf} mm · Material: ${esc($('pgMaterial').value.trim()||'Não informado')}</small>${maxX>W||maxY>H?'<p style="color:#a33"><b>Atenção:</b> a montagem ultrapassa os limites da chapa.</p>':''}${overlaps.length?`<p style="color:#a33"><b>Atenção: peças sobrepostas</b> — ${overlaps.map(esc).join('; ')}. Confira as posições.</p>`:''}`;
- const canvasW=Math.max(W,maxX),canvasH=Math.max(H,maxY);
- $('pgResults').innerHTML=`<div class="page-piece-card"><b>Chapa · ${W} × ${H} mm</b><small>Peças posicionadas em relação à peça base escolhida. As bordas não têm margem de segurança.</small><div class="page-canvas" style="aspect-ratio:${canvasW}/${canvasH};${maxX>W||maxY>H?'border-color:#b33':''}">${instances.map((p,i)=>`<div class="page-piece" title="${esc(p.name)}" style="left:${100*p.x/canvasW}%;top:${100*p.y/canvasH}%;width:${100*p.w/canvasW}%;height:${100*p.h/canvasH}%"><b>${esc(p.name)}</b><br>${p.w} × ${p.h} mm${p.base?'<br><small>PEÇA BASE</small>':''}</div>`).join('')}</div><small>Desenho esquemático proporcional. Confirme a continuidade real dos veios na chapa física.</small></div>`;
- lastPagination=[{pieces:instances,W,H,kerf,area,canvasW,canvasH}];
+ for(let i=0;i<allInstances.length;i++)for(let j=i+1;j<allInstances.length;j++){
+  const a=allInstances[i],b=allInstances[j];
+  if(a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y)overlaps.push(`${a.name} e ${b.name}`);
+ }
+ const area=allInstances.reduce((sum,p)=>sum+p.w*p.h,0),eff=100*area/(W*H);
+ $('pgSummary').innerHTML=`<b>Montagem livre · ${allInstances.length} peça(s) · ${groups.size} peça(s)-base</b><br>Área das peças: ${fmt(area/1e6)} m² · Aproveitamento bruto: ${fmt(eff)}%<br><small>Chapa: ${W} × ${H} mm · Margem nas bordas: 0 mm · Disco entre peças: ${kerf} mm · Material: ${esc($('pgMaterial').value.trim()||'Não informado')} · Busca de encaixe: até 1.000 posições</small>${outside?'<p style="color:#a33"><b>Atenção:</b> a montagem ultrapassa os limites da chapa.</p>':''}${overlaps.length?`<p style="color:#a33"><b>Atenção: peças sobrepostas</b> — ${overlaps.map(esc).join('; ')}. Confira as posições.</p>`:''}`;
+ const canvasW=W,canvasH=H;
+ $('pgResults').innerHTML=`<div class="page-piece-card"><b>Chapa · ${W} × ${H} mm</b><small>Peças-base independentes encaixadas na chapa; as peças vinculadas mantêm suas posições relativas. Bordas sem margem de segurança.</small><div class="page-canvas" style="aspect-ratio:${canvasW}/${canvasH};${outside?'border-color:#b33':''}">${allInstances.map(p=>`<div class="page-piece" title="${esc(p.name)}" style="left:${100*p.x/canvasW}%;top:${100*p.y/canvasH}%;width:${100*p.w/canvasW}%;height:${100*p.h/canvasH}%"><b>${esc(p.name)}</b><br>${p.w} × ${p.h} mm${p.base?'<br><small>PEÇA BASE</small>':''}</div>`).join('')}</div><small>Desenho esquemático proporcional. A busca automática avalia até 1.000 posições candidatas; confirme a continuidade real dos veios na chapa física.</small></div>`;
+ lastPagination=[{pieces:allInstances,W,H,kerf,area,canvasW,canvasH,groups:groups.size,tries:Math.min(tried,1000)}];
 }
 $('pgBuild').onclick=buildPagination;
 $('pgPrint').onclick=()=>{
  if(!lastPagination.length){alert('Monte a paginação antes de imprimir.');return}
  const root=$('technicalSheet'),old=root.innerHTML,material=esc($('pgMaterial').value.trim()||'Material não informado');
- root.innerHTML=lastPagination.map((s,i)=>{const ratio=Math.min(1,270/s.canvasW,175/s.canvasH),width=s.canvasW*ratio,height=s.canvasH*ratio;const blocks=s.pieces.map(p=>`<div class="tech-piece" style="left:${p.x*ratio}mm;top:${p.y*ratio}mm;width:${p.w*ratio}mm;height:${p.h*ratio}mm">${esc(p.name)}<br>${p.w} × ${p.h} mm</div>`).join('');return `<article class="technical-page"><h2>MARMORTECH · PLANO DE PAGINAÇÃO</h2><div class="tech-dim">Material: ${material} · Chapa ${i+1} · Medida nominal: ${s.W} × ${s.H} mm · Margem nas bordas: 0 mm · Disco interno: ${s.kerf} mm</div><div class="tech-dim">Sentido dos veios: ${esc($('pgDirection').selectedOptions[0].text)} · Observações: ${esc($('pgNote').value||'—')}</div><div class="tech-slab" style="width:${width}mm;height:${height}mm">${blocks}</div><div class="print-warning">Prévia esquemática de paginação. Conferir veios reais, sequência e medidas antes de cortar.</div></article>`}).join('');
- document.body.classList.add('printing-pagination');window.print();document.body.classList.remove('printing-pagination');root.innerHTML=old;
+ const orderDate=new Date().toLocaleDateString('pt-BR');
+ root.innerHTML=lastPagination.map((s,i)=>{
+  const ratio=Math.min(1,265/s.canvasW,155/s.canvasH),width=s.canvasW*ratio,height=s.canvasH*ratio;
+  const blocks=s.pieces.map(p=>`<div class="tech-piece" style="left:${p.x*ratio}mm;top:${p.y*ratio}mm;width:${p.w*ratio}mm;height:${p.h*ratio}mm">${esc(p.name)}<br>${p.w} × ${p.h} mm</div>`).join('');
+  const rows=s.pieces.map(p=>`<tr><td>${esc(p.name)}</td><td>${p.w} × ${p.h} mm</td><td>${p.base?'Peça-base':'Componente'}</td></tr>`).join('');
+  return `<article class="technical-page pagination-work-order">
+   <header class="os-header"><div><h1>MARMORTECH</h1><div class="os-subtitle">ORDEM DE SERVIÇO · PAGINAÇÃO DE CHAPA</div></div><div class="os-number">OS Nº __________________<br>Emissão: ${orderDate}<br>Folha ${i+1} de ${lastPagination.length}</div></header>
+   <div class="os-fields"><div><b>Cliente:</b> __________________________________________</div><div><b>Projeto / ambiente:</b> ______________________________</div><div><b>Responsável:</b> _____________________________________</div><div><b>Material:</b> ${material}</div></div>
+   <h2>PLANTA DE PAGINAÇÃO</h2>
+   <div class="tech-dim">Chapa: ${s.W} × ${s.H} mm · Espessura do disco: ${s.kerf} mm · Margem nas bordas: 0 mm · Sentido dos veios: ${esc($('pgDirection').selectedOptions[0].text)}</div>
+   <div class="tech-slab" style="width:${width}mm;height:${height}mm">${blocks}</div>
+   <h2>PEÇAS DESTA PLANTA</h2><table class="os-pieces"><thead><tr><th>Peça</th><th>Medida</th><th>Classificação</th></tr></thead><tbody>${rows}</tbody></table>
+   <div class="os-notes"><b>Orientações de execução</b><p>${esc($('pgNote').value||'Conferir medidas, sentido dos veios e acabamento antes do corte.')}</p><p>Conferir as medidas na chapa física antes de iniciar o corte. A planta é esquemática e deve ser validada pelo responsável da produção.</p></div>
+   <footer class="os-signatures"><div>Separado por: ________________________</div><div>Corte conferido por: __________________</div><div>Data: ____/____/________</div></footer>
+  </article>`;
+ }).join('');
+ const style=document.createElement('style');style.id='pagination-os-print-style';style.textContent=`@media print{body.printing-pagination .pagination-work-order{font-family:Arial,sans-serif;color:#172033;padding:8mm!important;page-break-after:always}body.printing-pagination .pagination-work-order:last-child{page-break-after:auto}.os-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #183653;padding-bottom:10px;margin-bottom:12px}.os-header h1{margin:0;font-size:22px;letter-spacing:2px;color:#183653}.os-subtitle{font-size:11px;font-weight:bold;margin-top:4px}.os-number{text-align:right;font-size:10px;line-height:1.8}.os-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:10px;margin:12px 0 18px}.pagination-work-order h2{font-size:12px;margin:14px 0 7px;border-bottom:1px solid #ccd4dd;padding-bottom:4px}.pagination-work-order .tech-slab{position:relative;margin:12px auto 18px;border:1.5px solid #172033;box-sizing:border-box}.pagination-work-order .tech-piece{font-size:7pt;line-height:1.2;overflow:hidden;box-sizing:border-box}.pagination-work-order .tech-dim{font-size:9px;margin:6px 0}.os-pieces{width:100%;border-collapse:collapse;font-size:9px}.os-pieces th,.os-pieces td{border:1px solid #ccd4dd;padding:5px;text-align:left}.os-pieces th{background:#edf1f5}.os-notes{font-size:9px;margin-top:14px}.os-signatures{display:flex;justify-content:space-between;font-size:9px;border-top:1px solid #ccd4dd;padding-top:12px;margin-top:22px}}`;
+ document.getElementById('pagination-os-print-style')?.remove();document.head.appendChild(style);
+ document.body.classList.add('printing-pagination');window.print();document.body.classList.remove('printing-pagination');root.innerHTML=old;style.remove();
 };
 renderList();renderRemnants();renderSheets();refreshPgReferences();
 </script></body></html>
